@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en"
+      xmlns:f="jakarta.faces.core"
+      xmlns:h="jakarta.faces.html"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Facelet Title</title>
+</h:head>
+<h:body>
+    <h:form id="booksForm">
+        <p:growl id="growl" showDetail="true"  />
+        <p:panel header="Books">
+            <p:outputPanel rendered="#{!userBean.logged}">
+                <p:button value="Login" outcome="/login.xhtml" style="margin-right: 10px;"/>
+                <h:outputText value="You are not logged in! Add/Remove options are not available"/>
+
+            </p:outputPanel>
+            <p:outputPanel rendered="#{userBean.logged}">
+                <p:commandButton value="Logout" action="#{loginBean.logout}" style="margin-right: 10px;"/>
+                <h:outputText value="You are logged in as: #{userBean.username}"/>
+            </p:outputPanel>
+        </p:panel>
+        <p:panel>
+            <p:dataTable id="bookTable" value="#{bookBean.books}" var="book" emptyMessage="No records found" >
+                <p:column headerText="Title" >
+                    #{book.title}
+                </p:column>
+                <p:column headerText="Author">
+                    #{book.author}
+                </p:column>
+                <p:column headerText="Price">
+                    <h:outputText value="#{book.price}" >
+                        <f:convertNumber locale="pl-PL" type="currency" currencySymbol="zł"  />
+                    </h:outputText>
+                </p:column>
+                <p:column rendered="#{userBean.logged}" headerText="Remove" >
+                    <p:commandButton icon="pi pi-trash" title="Remove" action="#{bookBean.onRemoveBook(book)}" update="bookTable" />
+                </p:column>
+            </p:dataTable>
+        </p:panel>
+        <p:commandButton rendered="#{userBean.logged}" value="Add book" action="#{bookBean.onBookAdd()}" oncomplete="PF('BookDlg').show()" update=":BookDlgId" />
+    </h:form>
+    <p:link value="Link to protected page" outcome="/restricted/restricted.xhtml" />
+    <p:dialog id="BookDlgId" widgetVar="BookDlg" dynamic="true" modal="true"  header="Book">
+        <h:form>
+            <p:panelGrid columns="2">
+                <p:outputLabel value="Title" for="titleId"/>
+                <p:inputText id="titleId" value="#{bookBean.newBook.title}" required="true" />
+                <p:outputLabel value="Author" for="authorId"/>
+                <p:inputText id="authorId" value="#{bookBean.newBook.author}" required="true" />
+                <p:outputLabel value="Price" for="priceId"/>
+                <p:inputText id="priceId" value="#{bookBean.newBook.price}"  required="true" >
+                    <f:convertNumber locale="pl-PL"  type="number" maxFractionDigits="2"  />
+                </p:inputText>
+            </p:panelGrid>
+            <p:commandButton  value="Cancel" type="button" onclick="PF('BookDlg').hide()"  />
+            <p:commandButton value="Ok" action="#{bookBean.onBookAdded}"  update=":booksForm:growl :booksForm:bookTable" />
+        </h:form>
+    </p:dialog>
+</h:body>
+</html>
